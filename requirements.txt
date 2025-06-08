@@ -1,0 +1,13 @@
+streamlit
+numpy
+pandas
+librosa
+soundfile
+scipy
+torch
+torchaudio
+whisper
+pydub
+pyngrok
+scikit-learn
+speechbrain
