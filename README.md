@@ -14,12 +14,9 @@ This project performs end-to-end audio processing, including:
 ├── app.py                   # Streamlit app
 ├── notebooks/
 │   └── speaker_id_pipeline.ipynb  # Development notebook
-├── audio_samples/          # Sample input audio (add your own)
-├── output/                 # Output files (ignored in .gitignore)
-├── models/                 # Pretrained models (ignored)
-├── tests/                  # Test scripts (optional)
+├── audio_samples/          # Sample input audio
+├── output/                 # Output files 
 ├── requirements.txt        # Dependencies
-├── .gitignore              # Ignored files/folders
 └── README.md
 ```
 
