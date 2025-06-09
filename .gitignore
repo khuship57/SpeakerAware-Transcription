@@ -1,0 +1,27 @@
+# Ignore audio samples
+audio_samples/
+*.wav
+*.mp3
+*.flac
+*.ogg
+
+# Ignore output files
+output/
+*.json
+*.txt
+*.srt
+*.csv
+*.vtt
+
+# Python cache
+__pycache__/
+*.py[cod]
+
+# Logs and temp files
+*.log
+*.tmp
+*.bak
+*.swp
+
+# Jupyter notebook checkpoints
+.ipynb_checkpoints/
