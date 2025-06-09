@@ -11,3 +11,4 @@ pydub
 pyngrok
 scikit-learn
 speechbrain
+ffmpeg-python
