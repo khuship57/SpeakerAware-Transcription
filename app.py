@@ -8,11 +8,11 @@ import numpy as np
 import pandas as pd
 from typing import Tuple, List, Dict
 import re
-import os
-import pickle
+import pickle 
 from threading import Thread
-from pyngrok import ngrok
-import streamlit as st
+import subprocess
+import sys
+import shutil
 
 # Audio processing libraries
 from pydub import AudioSegment
@@ -37,6 +37,67 @@ except ImportError:
     st.error("SpeechBrain is not installed. Please install it using: pip install speechbrain")
 
 warnings.filterwarnings("ignore")
+
+def check_ffmpeg_installation():
+    try:
+        result = subprocess.run(['ffmpeg', '-version'], 
+                              stdout=subprocess.PIPE, 
+                              stderr=subprocess.PIPE, 
+                              check=True)
+        return True
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        return False
+
+def install_ffmpeg_apt():
+    try:
+        st.info("🔄 Installing FFmpeg using apt...")
+        subprocess.run(['apt', 'update'], check=True, capture_output=True)
+        subprocess.run(['apt', 'install', '-y', 'ffmpeg'], check=True, capture_output=True)
+        return True
+
+    except subprocess.CalledProcessError as e:
+        st.error(f"❌ Failed to install FFmpeg: {e}")
+        return False
+    except FileNotFoundError:
+        st.error("❌ apt command not found. This system may not support apt package manager.")
+        return False
+        
+def setup_ffmpeg():
+    """Setup FFmpeg for the environment"""
+    if check_ffmpeg_installation():
+        return True
+    
+    st.warning("⚠️ FFmpeg not found. Attempting to install...")
+    
+    # Try different installation methods
+    if install_ffmpeg_apt():
+        return check_ffmpeg_installation()
+    
+    # Alternative: Try to set AudioSegment to use system libraries
+    st.info("🔄 Trying alternative audio conversion methods...")
+    try:
+        # Try to use AudioSegment with different converters
+        AudioSegment.converter = "ffmpeg"
+        AudioSegment.ffmpeg = "ffmpeg"
+        AudioSegment.ffprobe = "ffprobe"
+        return True
+    except:
+        pass
+    
+    st.error("""
+    ❌ Could not install or configure FFmpeg. Please install it manually:
+    
+    **For Ubuntu/Debian:**
+    ```bash
+    sudo apt update
+    sudo apt install ffmpeg
+    ```
+    
+    **For other systems:**
+    - Visit: https://ffmpeg.org/download.html
+    - Or use your system's package manager
+    """)
+    return False
 
 # Configure page
 st.set_page_config(
@@ -74,20 +135,43 @@ st.markdown("""
 class AudioProcessor:
     def __init__(self, target_sr: int = 16000):
         self.target_sr = target_sr
-        # Set device for audio processing (can use GPU for librosa operations)
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
 
     def convert_to_wav(self, input_file, output_path):
-        """Convert audio file to WAV format"""
+        """Convert audio file to WAV format with improved error handling"""
         try:
-            audio = AudioSegment.from_file(input_file)
-            audio.export(output_path, format="wav")
-            return True, "Conversion successful"
+            # Method 1: Try using pydub with FFmpeg
+            try:
+                audio = AudioSegment.from_file(input_file)
+                audio.export(output_path, format="wav")
+                return True, "Conversion successful using pydub"
+            except Exception as e1:
+                st.warning(f"Pydub conversion failed: {str(e1)}")
+                
+                # Method 2: Try using librosa directly
+                try:
+                    audio, sr = librosa.load(str(input_file), sr=None)
+                    sf.write(output_path, audio, sr)
+                    return True, "Conversion successful using librosa"
+                except Exception as e2:
+                    st.warning(f"Librosa conversion failed: {str(e2)}")
+                    
+                    # Method 3: Try using torchaudio
+                    try:
+                        waveform, sample_rate = torchaudio.load(str(input_file))
+                        # Convert to mono if stereo
+                        if waveform.shape[0] > 1:
+                            waveform = torch.mean(waveform, dim=0, keepdim=True)
+                        torchaudio.save(output_path, waveform, sample_rate)
+                        return True, "Conversion successful using torchaudio"
+                    except Exception as e3:
+                        return False, f"All conversion methods failed: pydub({e1}), librosa({e2}), torchaudio({e3})"
+                        
         except Exception as e:
             return False, f"Conversion failed: {str(e)}"
 
     def load_audio(self, path: str) -> Tuple[np.ndarray, int]:
-        """Load audio from a file."""
+        """Load audio from a file with multiple fallback methods."""
         try:
             audio, sr = librosa.load(path, sr=None)
         except Exception:
@@ -313,19 +397,13 @@ def main():
     st.title("🎵 Audio Processing Pipeline")
     st.markdown("### Complete pipeline for audio preprocessing, speaker diarization, and transcription")
 
+    # Check FFmpeg installation at startup
+    if not setup_ffmpeg():
+        st.error("⚠️ FFmpeg setup incomplete. Some audio formats may not be supported.")
+        st.info("You can still try uploading WAV files directly, or install FFmpeg manually.")
+
     # Sidebar configuration
     st.sidebar.header("Configuration")
-
-    # Processing options
-    st.sidebar.subheader("Audio Preprocessing")
-    normalize_method = st.sidebar.selectbox(
-        "Normalization Method",
-        ["peak", "rms", "lufs"],
-        help="Method for audio normalization"
-    )
-
-    apply_highpass = st.sidebar.checkbox("Apply High-pass Filter", value=True)
-    apply_denoising = st.sidebar.checkbox("Apply Spectral Subtraction", value=True)
 
     # Speaker Diarization options
     st.sidebar.subheader("Speaker Diarization")
@@ -334,9 +412,10 @@ def main():
 
     st.sidebar.subheader("Whisper Transcription")
     whisper_model_name = st.sidebar.selectbox(
-    "Choose Whisper model",
-    options=["tiny", "base", "small", "medium", "large"],
-    index=2)  # default to "base"
+        "Choose Whisper model",
+        options=["tiny", "base", "small", "medium", "large"],
+        index=2  # default to "small"
+    )
 
     # File upload
     st.header("📁 Upload Audio File")
@@ -367,12 +446,18 @@ def main():
 
             if st.button("🚀 Start Processing", type="primary"):
                 process_audio_pipeline(
-                    input_file, temp_path, normalize_method, apply_highpass,
-                    apply_denoising, min_speakers, max_speakers,whisper_model_name
+                    input_file=input_file,
+                    temp_path=temp_path,
+                    normalize_method="peak", 
+                    apply_highpass=True,      
+                    apply_denoising=True,     
+                    min_speakers=min_speakers,
+                    max_speakers=max_speakers,
+                    whisper_model_name=whisper_model_name
                 )
 
 def process_audio_pipeline(input_file, temp_path, normalize_method, apply_highpass,
-                          apply_denoising, min_speakers, max_speakers,whisper_model_name):
+                          apply_denoising, min_speakers, max_speakers, whisper_model_name):
     """Main processing pipeline with optimized GPU/CPU usage"""
 
     progress_bar = st.progress(0)
@@ -389,6 +474,7 @@ def process_audio_pipeline(input_file, temp_path, normalize_method, apply_highpa
             st.error(f"❌ Conversion failed: {message}")
             return
 
+        st.info(f"✅ {message}")
         progress_bar.progress(10)
 
         # Step 2: Preprocess audio
@@ -433,7 +519,6 @@ def process_audio_pipeline(input_file, temp_path, normalize_method, apply_highpa
         progress_bar.progress(55)
 
         # Step 5: Extract speaker embeddings (GPU if available)
-        gpu_status = "GPU" if torch.cuda.is_available() else "CPU"
         status_text.text(f"🔄 Extracting speaker embeddings...")
         
         if not diarizer.load_speaker_model():
@@ -612,16 +697,16 @@ def transcribe_segments(audio_file, speaker_labels, temp_path, whisper_model_nam
 
         # Transcribe
         try:
-            result = model.transcribe(str(temp_segment), task="translate")
+            result = model.transcribe(str(temp_segment), task="transcribe")
             text = result['text'].strip()
 
             if text: 
-              transcripts.append({
-                  'speaker': seg['speaker'],
-                  'start': seg['start'],
-                  'end': seg['end'],
-                  'text': text
-              })
+                transcripts.append({
+                    'speaker': seg['speaker'],
+                    'start': seg['start'],
+                    'end': seg['end'],
+                    'text': text
+                })
 
         except Exception as e:
             st.warning(f"Failed to transcribe segment {i}: {str(e)}")
@@ -650,14 +735,14 @@ def merge_speaker_segments(segments, max_gap=1.0):
     return merged
 
 def format_time(seconds):
-  td = timedelta(seconds=round(seconds))
-  total_seconds = int(td.total_seconds())
-  hours, remainder = divmod(total_seconds, 3600)
-  minutes, secs = divmod(remainder, 60)
-  if hours:
-    return f"{hours:02}:{minutes:02}:{secs:02}"
-  else:
-    return f"{minutes:02}:{secs:02}"
+    td = timedelta(seconds=round(seconds))
+    total_seconds = int(td.total_seconds())
+    hours, remainder = divmod(total_seconds, 3600)
+    minutes, secs = divmod(remainder, 60)
+    if hours:
+        return f"{hours:02}:{minutes:02}:{secs:02}"
+    else:
+        return f"{minutes:02}:{secs:02}"
 
 def display_results(transcripts, speaker_labels):
     """Display processing results"""
