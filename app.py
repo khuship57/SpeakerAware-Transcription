@@ -652,7 +652,6 @@ def process_audio_pipeline(input_file, temp_path, apply_highpass,
 
         processed_audio = processor.preprocess_audio(
             audio, sr,
-            normalize_method=normalize_method,
             apply_highpass=apply_highpass,
             denoise_method='spectral_subtraction' if apply_denoising else None
         )
