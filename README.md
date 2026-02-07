@@ -56,25 +56,21 @@ This project processes raw audio files and produces **speaker-labeled transcript
 ├── requirements.txt # Python dependencies
 └── README.md
 
-
 ---
 
 ## ▶️ Getting Started
 
 ### 1️⃣ Install Dependencies
-```bash
 pip install -r requirements.txt
 2️⃣ Run the Streamlit App
 streamlit run app.py
+
+
 ⚙️ Configuration Highlights
 🎛 Whisper model selection (tiny → large)
-
 🔊 Adjustable VAD sensitivity
-
 👥 Configurable speaker count range
-
 ⚡ GPU acceleration enabled where available
-
 🧩 Modular pipeline for easy extension
 
 📤 Output Example
