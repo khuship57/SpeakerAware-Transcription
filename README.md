@@ -1,32 +1,88 @@
-# 🎙️ Speaker Identification and Transcription Pipeline
+🎙️ Speaker Diarization & Transcription Pipeline (Whisper + VAD)
 
-This project performs end-to-end audio processing, including:
+An end-to-end Python pipeline for speaker diarization and speech transcription, designed to answer the question:
 
-- Audio preprocessing (conversion, filtering, normalization, denoising)
-- Voice Activity Detection (VAD) using SpeechBrain
-- Speaker Embedding extraction and clustering
-- Speaker Diarization (who spoke when)
-- Transcription using OpenAI's Whisper
-- Optional Streamlit interface for interaction
+“Who spoke, when, and what was said?”
 
-## 📁 Project Structure
-```
-├── app.py                   # Streamlit app
+This project processes raw audio files and produces speaker-labeled transcripts using modern speech processing techniques such as Voice Activity Detection (VAD), speaker embedding clustering, and OpenAI Whisper for transcription.
+
+
+✨ Key Features
+
+✅ Audio Preprocessing
+Format conversion & resampling
+Noise reduction & normalization
+Filtering and denoising
+
+✅ Voice Activity Detection (VAD)
+Accurate speech / silence segmentation
+Powered by SpeechBrain
+
+✅ Speaker Diarization
+Speaker embedding extraction
+Clustering-based speaker segmentation
+Detects who spoke when
+Supports overlapping speech (configurable)
+
+✅ Speech Transcription
+High-accuracy transcription using OpenAI Whisper
+Multiple Whisper model sizes supported
+
+✅ Interactive UI 
+Streamlit-based interface
+Adjustable preprocessing & diarization parameters
+Real-time transcription preview
+
+🧠 Typical Use Cases
+
+🎧 Meeting & interview transcription
+📞 Call center audio analysis
+🎙️ Podcast & panel discussion processing
+🧪 Speech research & experimentation
+📊 Dataset preparation for speech ML models
+
+📁 Project Structure
+├── app.py                     # Streamlit application
 ├── notebooks/
-│   └── speaker_id_pipeline.ipynb  # Development notebook
-├── audio_samples/          # Sample input audio
-├── output/                 # Output files 
-├── requirements.txt        # Dependencies
+│   └── speaker_id_pipeline.ipynb   # Development & experiments
+├── audio_samples/             # Example input audio files
+├── output/                    # Transcripts & diarization output
+├── requirements.txt           # Python dependencies
 └── README.md
-```
 
-## ▶️ Run the App
-```bash
+▶️ Getting Started
+1️⃣ Install Dependencies
 pip install -r requirements.txt
-streamlit run app.py
-```
 
-## 📌 Notes
-- Whisper model selection is available in the sidebar.
-- All processing is GPU-accelerated where possible.
-- Preprocessing options and speaker range are customizable.
+2️⃣ Run the Streamlit App
+streamlit run app.py
+
+
+⚙️ Configuration Highlights
+
+🎛 Whisper model selection (tiny → large)
+🔊 Adjustable VAD sensitivity
+👥 Configurable speaker count range
+⚡ GPU acceleration enabled where available
+🧩 Modular pipeline for easy extension
+
+📤 Output Example
+[00:00:02 - 00:00:06] Speaker 1: Hello everyone, welcome to the meeting.
+[00:00:07 - 00:00:12] Speaker 2: Thanks, let’s get started.
+
+Outputs include:
+Speaker-labeled transcripts
+Timestamps
+Structured text ready for downstream processing
+
+
+🛠️ Tech Stack & Keywords
+Python
+OpenAI Whisper
+SpeechBrain
+Speaker Diarization
+Voice Activity Detection (VAD)
+Audio Processing
+ASR (Automatic Speech Recognition)
+Clustering-based diarization
+Streamlit
