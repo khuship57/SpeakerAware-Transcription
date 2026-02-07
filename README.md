@@ -11,7 +11,9 @@ This project processes raw audio files and produces speaker-labeled transcripts 
 
 ✅ Audio Preprocessing
 Format conversion & resampling
+
 Noise reduction & normalization
+
 Filtering and denoising
 
 ✅ Voice Activity Detection (VAD)
