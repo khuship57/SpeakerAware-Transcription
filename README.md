@@ -1,6 +1,7 @@
-# 🎙️ Speaker Diarization & Transcription Pipeline (Whisper + VAD)
+# 🎙️ Speaker Diarization & Transcription Pipeline
+**Whisper + VAD + Speaker Clustering**
 
-An **end-to-end Python pipeline** for **speaker diarization** and **speech transcription**, designed to answer the question:
+An **end-to-end Python pipeline** for **speaker diarization** and **speech transcription**, designed to answer the core question:
 
 > **Who spoke, when, and what was said?**
 
@@ -8,97 +9,103 @@ This project processes raw audio files and produces **speaker-labeled transcript
 
 ---
 
-## ✨ Key Features
+## 🚀 Features
 
-### ✅ Audio Preprocessing
-- Format conversion & resampling  
-- Noise reduction & normalization  
-- Filtering and denoising  
+### 🔊 Audio Preprocessing
+- Audio format conversion & resampling
+- Noise reduction & normalization
+- Filtering and denoising
 
-### ✅ Voice Activity Detection (VAD)
-- Accurate speech / silence segmentation  
+### 🎯 Voice Activity Detection (VAD)
+- Accurate speech/silence segmentation
 - Powered by **SpeechBrain**
 
-### ✅ Speaker Diarization
-- Speaker embedding extraction  
-- Clustering-based speaker segmentation  
-- Detects **who spoke when**  
-- Supports overlapping speech (configurable)
+### 👥 Speaker Diarization
+- Speaker embedding extraction
+- Clustering-based speaker segmentation
+- Detects **who spoke when**
+- Configurable support for overlapping speech
 
-### ✅ Speech Transcription
+### 📝 Speech Transcription
 - High-accuracy transcription using **OpenAI Whisper**
-- Multiple Whisper model sizes supported
+- Supports multiple Whisper model sizes (`tiny` → `large`)
 
-### ✅ Interactive UI
-- Streamlit-based interface  
-- Adjustable preprocessing & diarization parameters  
-- Real-time transcription preview  
+### 🖥️ Interactive UI
+- Streamlit-based web interface
+- Adjustable preprocessing & diarization parameters
+- Real-time transcription preview
 
 ---
 
-## 🧠 Typical Use Cases
+## 🧠 Use Cases
+- 🎧 Meeting & interview transcription
+- 📞 Call-center audio analysis
+- 🎙️ Podcast & panel discussion processing
+- 🧪 Speech research & experimentation
+- 📊 Dataset preparation for speech ML models
 
-- 🎧 Meeting & interview transcription  
-- 📞 Call center audio analysis  
-- 🎙️ Podcast & panel discussion processing  
-- 🧪 Speech research & experimentation  
-- 📊 Dataset preparation for speech ML models  
+---
+
+## 🛠️ Tech Stack
+- **Python**
+- **OpenAI Whisper** (ASR)
+- **SpeechBrain** (VAD & embeddings)
+- **Clustering-based diarization**
+- **Streamlit**
+- **Audio signal processing**
 
 ---
 
 ## 📁 Project Structure
 
-├── app.py # Streamlit application
+```text
+.
+├── app.py                     # Streamlit application
 ├── notebooks/
-│ └── speaker_id_pipeline.ipynb # Development & experiments
-├── audio_samples/ # Example input audio files
-├── output/ # Transcripts & diarization output
-├── requirements.txt # Python dependencies
+│   └── speaker_id_pipeline.ipynb   # Development & experiments
+├── audio_samples/             # Example input audio files
+├── output/                    # Transcripts & diarization output
+├── requirements.txt           # Python dependencies
 └── README.md
+```
+
+## ⚙️ Installation
+
+1️⃣ Clone the Repository
+```bash
+git clone https://github.com/your-username/speaker-diarization-pipeline.git
+cd speaker-diarization-pipeline
+```
+
+2️⃣ Install Dependencies
+```bash
+pip install -r requirements.txt
+```
+⚠️ Note: GPU acceleration will be used automatically if CUDA is available.
+
+▶️ Running the Application
+Launch the Streamlit app:
+```bash
+streamlit run app.py
+```
+Then open the provided local URL in your browser.
 
 ---
 
-## ▶️ Getting Started
+## 🎛️ Configuration Options
+- 🎤 Whisper model selection (tiny, base, small, medium, large)
+- 🔊 VAD sensitivity control
+- 👥 Speaker count range
+- ⚡ GPU acceleration (if available)
+- 🧩 Modular pipeline for easy extension
 
-### 1️⃣ Install Dependencies
-pip install -r requirements.txt
-2️⃣ Run the Streamlit App
-streamlit run app.py
-
-
-⚙️ Configuration Highlights
-🎛 Whisper model selection (tiny → large)
-🔊 Adjustable VAD sensitivity
-👥 Configurable speaker count range
-⚡ GPU acceleration enabled where available
-🧩 Modular pipeline for easy extension
-
-📤 Output Example
+## 📤 Example Output
+```bash
 [00:00:02 - 00:00:06] Speaker 1: Hello everyone, welcome to the meeting.
 [00:00:07 - 00:00:12] Speaker 2: Thanks, let’s get started.
-Outputs include:
+```
 
-Speaker-labeled transcripts
-
-Timestamps
-
-Structured text ready for downstream processing
-
-🛠️ Tech Stack & Keywords
-Python
-
-OpenAI Whisper
-
-SpeechBrain
-
-Speaker Diarization
-
-Voice Activity Detection (VAD)
-
-Audio Processing
-
-ASR (Automatic Speech Recognition)
-
-Clustering-based diarization
-
-Streamlit
+# Output Includes
+- Speaker-labeled transcripts
+- Timestamps
+- Structured text ready for downstream processing
